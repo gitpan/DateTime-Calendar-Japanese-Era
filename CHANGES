@@ -1,5 +1,8 @@
 Changes
 =======
 
+0.02 22 Jan 2004
+  - Fix edge case where date falls on the first day of new era
+
 0.01 12 Jan 2004
   - initial release

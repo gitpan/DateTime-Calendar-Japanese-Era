@@ -6,7 +6,7 @@ BEGIN
 {
     @ISA       = 'Exporter';
     @EXPORT_OK = qw(SOUTH_REGIME NORTH_REGIME);
-    $VERSION   = '0.01';
+    $VERSION   = '0.02';
 }
 use DateTime;
 use DateTime::Infinite;
@@ -68,7 +68,7 @@ sub lookup_by_date
     } );
 
     my $dt_utc = DateTime->from_object(object => $args{datetime});
-    $dt_utc->set_time_zone('UTC');
+#    $dt_utc->set_time_zone('UTC');
 
     my @candidates;
     if ($args{regime} == SOUTH_REGIME && $dt_utc >= SOUTH_REGIME_START && $dt_utc <= SOUTH_REGIME_END) {
@@ -85,7 +85,7 @@ sub lookup_by_date
     }
 
     foreach my $era (@candidates) {
-        if ($era->start <= $dt_utc && $era->end >= $dt_utc) {
+        if ($era->start <= $dt_utc && $era->end > $dt_utc) {
             return $era->clone;
         }
     }
@@ -416,8 +416,8 @@ sub register_era
 
         # we create the dates in Asia/Tokyo time, but for calculation
         # we really want them to be in UTC.
-        $start_date->set_time_zone('UTC');
-        $end_date->set_time_zone('UTC');
+#        $start_date->set_time_zone('UTC');
+#        $end_date->set_time_zone('UTC');
     
         __PACKAGE__->register_era(
             id    => $this_era->[0],
@@ -462,8 +462,8 @@ sub register_era
 
         # we create the dates in Asia/Tokyo time, but for calculation
         # we really want them to be in UTC.
-        $start_date->set_time_zone('UTC');
-        $end_date->set_time_zone('UTC');
+#        $start_date->set_time_zone('UTC');
+#        $end_date->set_time_zone('UTC');
         push @SOUTH_REGIME_ERAS, __PACKAGE__->new(
             start => $start_date, end => $end_date, id => $this_era->[0]
         );
