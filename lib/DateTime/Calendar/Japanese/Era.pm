@@ -6,7 +6,7 @@ BEGIN
 {
     @ISA       = 'Exporter';
     @EXPORT_OK = qw(SOUTH_REGIME NORTH_REGIME);
-    $VERSION   = '0.03';
+    $VERSION   = '0.04';
 }
 use DateTime;
 use DateTime::Infinite;
@@ -151,19 +151,19 @@ sub register_era
         [ 'DAIDOU', [ 806, 7, 11 ]],
         [ 'KOUNIN', [ 810, 11, 22 ]],
         [ 'TENCHOU', [ 823, 2, 22 ]],
-        [ 'SHOUWA1', [ 834, 2, 18 ]],
-        [ 'KAJOU1', [ 848, 8, 18 ]],
+        [ 'JOUWA1', [ 834, 2, 18 ]],
+        [ 'KASHOU', [ 848, 8, 18 ]],
         [ 'NINJU', [ 851, 7, 4 ]],
         [ 'SAIKOU', [ 855, 1, 25 ]],
         [ 'TENNAN', [ 857, 4, 22 ]],
         [ 'JOUGAN', [ 859, 6, 22 ]],
-        [ 'GENKEI', [ 877, 6, 4 ]],
+        [ 'GANGYOU', [ 877, 6, 4 ]],
         [ 'NINNA', [ 885, 4, 13 ]],
         [ 'KANPYOU', [ 889, 7, 2 ]],
         [ 'SHOUTAI', [ 898, 6, 22 ]],
         [ 'ENGI', [ 901, 9, 5 ]],
         [ 'ENCHOU', [ 923, 6, 2 ]],
-        [ 'SHOUHEI', [ 931, 6, 19 ]],
+        [ 'JOUHEI', [ 931, 6, 19 ]],
         [ 'TENGYOU', [ 938, 7, 26 ]],
         [ 'TENRYAKU', [ 947, 6, 18 ]],
         [ 'TENTOKU', [ 957, 12, 25 ]],
@@ -178,7 +178,7 @@ sub register_era
         [ 'KANNA', [ 985, 6, 22 ]],
         [ 'EIEN', [ 987, 6, 8 ]],
         [ 'EISO', [ 989, 10, 14 ]],
-        [ 'SHOURYAKU1', [ 990, 12, 31 ]],
+        [ 'SHOURYAKU', [ 990, 12, 31 ]],
         [ 'CHOUTOKU', [ 995, 4, 28 ]],
         [ 'CHOUHOU', [ 999, 2, 6 ]],
         [ 'KANKOU', [ 1004, 9, 12 ]],
@@ -196,7 +196,7 @@ sub register_era
         [ 'JIRYAKU', [ 1065, 10, 9 ]],
         [ 'ENKYUU', [ 1069, 6, 10 ]],
         [ 'JOUHOU', [ 1074, 10, 21 ]],
-        [ 'SHOURYAKU2', [ 1078, 1, 9 ]],
+        [ 'JOURYAKU', [ 1078, 1, 9 ]],
         [ 'EIHOU', [ 1081, 4, 27 ]],
         [ 'OUTOKU', [ 1084, 4, 19 ]],
         [ 'KANJI', [ 1087, 6, 15 ]],
@@ -205,7 +205,7 @@ sub register_era
         [ 'JOUTOKU', [ 1098, 1, 1 ]],
         [ 'KOUWA', [ 1099, 10, 20 ]],
         [ 'CHOUJI', [ 1104, 4, 13 ]],
-        [ 'KAJOU2', [ 1106, 6, 18 ]],
+        [ 'KAJOU', [ 1106, 6, 18 ]],
         [ 'TENNIN', [ 1108, 10, 15 ]],
         [ 'TENNEI', [ 1110, 9, 5 ]],
         [ 'EIKYU', [ 1113, 9, 1 ]],
@@ -277,7 +277,7 @@ sub register_era
         [ 'TOKUJI', [ 1307, 1, 26 ]],
         [ 'ENKYOU1', [ 1308, 11, 30 ]],
         [ 'OUCHOU', [ 1311, 6, 23 ]],
-        [ 'SHOUWA2', [ 1312, 6, 3 ]],
+        [ 'SHOUWA1', [ 1312, 6, 3 ]],
         [ 'BUNPOU', [ 1317, 3, 24 ]],
         [ 'GENNOU', [ 1319, 6, 24 ]],
         [ 'GENKOU', [ 1321, 4, 28 ]],
@@ -287,7 +287,7 @@ sub register_era
         [ 'SHOUKEI', [ 1332, 6, 29 ]],
         [ 'RYAKUOU', [ 1338, 10, 19 ]],
         [ 'KOUEI', [ 1342, 7, 7 ]],
-        [ 'JOUWA', [ 1345, 12, 22 ]],
+        [ 'JOUWA2', [ 1345, 12, 22 ]],
         [ 'KANNOU', [ 1350, 5, 11 ]],
         [ 'BUNNNA', [ 1352, 11, 12 ]],
         [ 'ENBUN', [ 1356, 6, 5 ]],
@@ -342,7 +342,7 @@ sub register_era
         [ 'GENROKU', [ 1688, 11, 22 ]],
         [ 'HOUEI', [ 1704, 5, 15 ]],
         [ 'SHOUTOKU', [ 1711, 7, 10 ]],
-        [ 'KYOUHOU', [ 1716, 8, 9 ]],
+        [ 'KYOUHO', [ 1716, 8, 9 ]],
         [ 'GENBUN', [ 1736, 7, 6 ]],
         [ 'KANPOU', [ 1741, 5, 11 ]],
         [ 'ENKYOU2', [ 1744, 5, 2 ]],
@@ -365,7 +365,7 @@ sub register_era
         [ 'KEIOU', [ 1865, 6, 23 ]],
         [ 'MEIJI',      [ 1868, 10, 23 ] ],
         [ 'TAISHO',     [ 1912,  7, 30 ] ],
-        [ 'SHOUWA3',    [ 1926, 12, 25 ] ],
+        [ 'SHOUWA2',    [ 1926, 12, 25 ] ],
         [ 'HEISEI',     [ 1989,  1,  8 ] ],
     );
     my @south_regime_eras = (
@@ -567,13 +567,13 @@ Below are the list of era IDs that are known to this module:
   DAIDOU
   KOUNIN
   TENCHOU
-  SHOUWA1
-  KAJOU1
+  JOUWA
+  KASHOU
   NINJU
   SAIKOU
   TENNAN
   JOUGAN
-  GENKEI
+  GANGYOU
   NINNA
   KANPYOU
   SHOUTAI
@@ -594,7 +594,7 @@ Below are the list of era IDs that are known to this module:
   KANNA
   EIEN
   EISO
-  SHOURYAKU1
+  SHOURYAKU
   CHOUTOKU
   CHOUHOU
   KANKOU
@@ -612,7 +612,7 @@ Below are the list of era IDs that are known to this module:
   JIRYAKU
   ENKYUU
   JOUHOU
-  SHOURYAKU2
+  JOURYAKU
   EIHOU
   OUTOKU
   KANJI
@@ -621,7 +621,7 @@ Below are the list of era IDs that are known to this module:
   JOUTOKU
   KOUWA
   CHOUJI
-  KAJOU2
+  KAJOU
   TENNIN
   TENNEI
   EIKYU
@@ -693,7 +693,7 @@ Below are the list of era IDs that are known to this module:
   TOKUJI
   ENKYOU1
   OUCHOU
-  SHOUWA2
+  SHOUWA1
   BUNPOU
   GENNOU
   GENKOU
@@ -703,7 +703,7 @@ Below are the list of era IDs that are known to this module:
   SHOUKEI
   RYAKUOU
   KOUEI
-  JOUWA
+  JOUWA1
   KANNOU
   BUNNNA
   ENBUN
@@ -758,7 +758,7 @@ Below are the list of era IDs that are known to this module:
   GENROKU
   HOUEI
   SHOUTOKU
-  KYOUHOU
+  KYOUHO
   GENBUN
   KANPOU
   ENKYOU2
@@ -781,7 +781,7 @@ Below are the list of era IDs that are known to this module:
   KEIOU
   MEIJI
   TAISHO
-  SHOUWA3
+  SHOUWA2
   HEISEI
 
 These are the eras from the South regime during 1331-1392
