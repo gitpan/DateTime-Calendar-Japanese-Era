@@ -15,17 +15,17 @@ not run its Makefile.PL or Build.PL.
 Hash: SHA1
 
 SHA1 ed971341e1c26f909b02bb2206deb950f1679e5a Build.PL
-SHA1 39dc2a9075c1e6f3bd3fcd369925ef1f26d5e86e CHANGES
+SHA1 b6b2d77db0e637439488be168a9a25fcfea13d58 CHANGES
 SHA1 94b5d321d62e60042dec7bebdb132e8bd5cb56fd MANIFEST
-SHA1 56b773a8e4dae537c4cb0619f696b4d8f6c9d476 META.yml
+SHA1 e70edb34c26811fb299b1ea5acaaf101475f2ac8 META.yml
 SHA1 faec519f213f7e603ecd1420d147b35713757738 Makefile.PL
-SHA1 9641055392ccf9696a500778287ba5f241b6b13a lib/DateTime/Calendar/Japanese/Era.pm
+SHA1 3304a4f0229a58e96c8cbed1819eff67427cf1ed lib/DateTime/Calendar/Japanese/Era.pm
 SHA1 e63eb34485d65e85aaefea19f5ddae9b527e27f6 t/01-sanity.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.0.6 (GNU/Linux)
 Comment: For info see http://www.gnupg.org
 
-iD8DBQFAEHuupIZqybP6lHMRAk5UAJ9OGhogOE1tONnkohbP5okT4L9uYgCfbrjm
-QTlIBGh7tE3ZP7mgJOtMVUs=
-=5St5
+iD8DBQFAEVJlpIZqybP6lHMRAm0UAJ9R+2QZdGx18tYhqulBB3cOd2WY2ACgz8Ye
+RGngJJ/OGE85z8n66D+eJX8=
+=Alvc
 -----END PGP SIGNATURE-----

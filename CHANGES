@@ -1,6 +1,9 @@
 Changes
 =======
 
+0.03 23 Jan 2004
+  - Remove Math::Round (I guess I didn't use it anymore)
+
 0.02 22 Jan 2004
   - Fix edge case where date falls on the first day of new era
 

@@ -6,11 +6,10 @@ BEGIN
 {
     @ISA       = 'Exporter';
     @EXPORT_OK = qw(SOUTH_REGIME NORTH_REGIME);
-    $VERSION   = '0.02';
+    $VERSION   = '0.03';
 }
 use DateTime;
 use DateTime::Infinite;
-use Math::Round;
 use Params::Validate();
 use constant NORTH_REGIME  => 1;
 use constant SOUTH_REGIME  => 2;
