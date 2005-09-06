@@ -1,3 +1,8 @@
+# $Id: Era.pm,v 1.2 2005/09/06 00:55:49 lestrrat Exp $
+#
+# Copyright (c) 2004-2005 Daisuke Maki <dmaki@cpan.org>
+# All rights reserved.
+
 package DateTime::Calendar::Japanese::Era;
 use strict;
 use vars qw(@ISA @EXPORT_OK $VERSION);
@@ -6,7 +11,7 @@ BEGIN
 {
     @ISA       = 'Exporter';
     @EXPORT_OK = qw(SOUTH_REGIME NORTH_REGIME);
-    $VERSION   = '0.04';
+    $VERSION   = '0.05';
 }
 use DateTime;
 use DateTime::Infinite;

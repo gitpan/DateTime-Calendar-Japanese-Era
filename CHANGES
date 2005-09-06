@@ -1,6 +1,9 @@
 Changes
 =======
 
+0.05 06 Sep 2005
+  - use 'traditional' Makefile.PL
+
 0.04 03 Feb 2004
   - Fix mispelling and other inconsistencies in the era IDs
 

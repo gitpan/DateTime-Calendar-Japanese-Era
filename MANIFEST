@@ -1,9 +1,7 @@
 Build.PL
 CHANGES
 lib/DateTime/Calendar/Japanese/Era.pm
-Makefile.PL
-MANIFEST
+MANIFEST			This list of files
 META.yml
 t/01-sanity.t
-
-SIGNATURE    Added here by Module::Build
+Makefile.PL
