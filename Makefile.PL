@@ -2,13 +2,14 @@
 use ExtUtils::MakeMaker;
 WriteMakefile
 (
-          'PL_FILES' => {},
-          'INSTALLDIRS' => 'site',
           'NAME' => 'DateTime::Calendar::Japanese::Era',
           'VERSION_FROM' => 'lib/DateTime/Calendar/Japanese/Era.pm',
           'PREREQ_PM' => {
-                           'DateTime' => 0,
-                           'Params::Validate' => 0
-                         }
+                           'DateTime' => '0',
+                           'Params::Validate' => '0'
+                         },
+          'INSTALLDIRS' => 'site',
+          'EXE_FILES' => [],
+          'PL_FILES' => {}
         )
 ;

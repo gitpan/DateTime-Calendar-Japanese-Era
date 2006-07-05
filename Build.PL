@@ -1,5 +1,5 @@
 #!perl
-# $Id: Build.PL,v 1.2 2005/09/06 00:55:48 lestrrat Exp $
+# $Id: /mirror/DateTime-Calendar-Japanese-Era/Build.PL 1672 2005-09-06T00:55:49.000000Z lestrrat  $
 #
 # Copyright (c) 2004-2005 Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -18,6 +18,7 @@ my $build = Module::Build->new(
 	recommends => {
 		'perl' => '5.6.1',
 	},
+    create_readme => 1,
     create_makefile_pl => 'traditional'
 );
 $build->create_build_script;

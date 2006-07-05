@@ -1,6 +1,10 @@
 Changes
 =======
 
+0.06 05 Jul 2006
+  - Add name -> era lookup. 
+  - Add pod tests
+
 0.05 06 Sep 2005
   - use 'traditional' Makefile.PL
 

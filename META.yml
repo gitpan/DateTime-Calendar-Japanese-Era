@@ -1,10 +1,12 @@
 ---
 name: DateTime-Calendar-Japanese-Era
-version: 0.05
+version: 0.06
 author:
-  - Daisuke Maki E<lt>daisuke@cpan.orgE<gt>
+  - 'Daisuke Maki E<lt>daisuke@cpan.orgE<gt>'
 abstract: DateTime Extension for Japanese Eras
 license: perl
+resources:
+  license: http://dev.perl.org/licenses/
 requires:
   DateTime: 0
   Params::Validate: 0
@@ -13,5 +15,8 @@ recommends:
 provides:
   DateTime::Calendar::Japanese::Era:
     file: lib/DateTime/Calendar/Japanese/Era.pm
-    version: 0.05
-generated_by: Module::Build version 0.2611
+    version: 0.06
+generated_by: Module::Build version 0.2801
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.2.html
+  version: 1.2
