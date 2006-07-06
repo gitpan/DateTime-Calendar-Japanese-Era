@@ -1,5 +1,5 @@
 #!perl
-# $Id: /mirror/DateTime-Calendar-Japanese-Era/Build.PL 1672 2005-09-06T00:55:49.000000Z lestrrat  $
+# $Id: /mirror/DateTime-Calendar-Japanese-Era/Build.PL 1675 2006-07-05T10:57:54.532994Z lestrrat  $
 #
 # Copyright (c) 2004-2005 Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.

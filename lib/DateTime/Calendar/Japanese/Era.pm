@@ -1,4 +1,4 @@
-# $Id: /mirror/DateTime-Calendar-Japanese-Era/lib/DateTime/Calendar/Japanese/Era.pm 1672 2005-09-06T00:55:49.000000Z lestrrat  $
+# $Id: /mirror/DateTime-Calendar-Japanese-Era/lib/DateTime/Calendar/Japanese/Era.pm 1678 2006-07-06T08:54:21.939009Z lestrrat  $
 #
 # Copyright (c) 2004-2005 Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -12,7 +12,7 @@ BEGIN
 {
     @ISA       = 'Exporter';
     @EXPORT_OK = qw(SOUTH_REGIME NORTH_REGIME);
-    $VERSION   = '0.06';
+    $VERSION   = '0.07';
 
     $HAS_ENCODE = eval { require Encode };
 }
@@ -158,6 +158,11 @@ sub register_era
         $ERAS_BY_CENTURY[ $end_century ] ||= [];
         push @{ $ERAS_BY_CENTURY[ $end_century ] }, $era;
     }
+}
+
+sub registered
+{
+    return values (%ERAS_BY_ID);
 }
 
 #BEGIN
@@ -591,6 +596,10 @@ South regime's eras if you explicitly specify it:
 =head2 register_era
 
 Registers a new era object in the lookup table.
+
+=head2 registered
+
+Returns all eras that are registered.
 
 =head2 lookup_by_id
 

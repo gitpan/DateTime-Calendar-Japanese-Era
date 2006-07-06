@@ -1,6 +1,9 @@
 Changes
 =======
 
+0.07 06 Jul 2006
+  - Add registered() method
+
 0.06 05 Jul 2006
   - Add name -> era lookup. 
   - Add pod tests

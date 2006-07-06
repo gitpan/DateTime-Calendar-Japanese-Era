@@ -56,6 +56,9 @@ FUNCTIONS
   register_era
     Registers a new era object in the lookup table.
 
+  registered
+    Returns all eras that are registered.
+
   lookup_by_id
       $heisei = DateTime::Calendar::Japanese::Era->lookup_by_id(
         id => HEISEI
