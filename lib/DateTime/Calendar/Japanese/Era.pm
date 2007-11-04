@@ -1,38 +1,43 @@
-# $Id: /mirror/DateTime-Calendar-Japanese-Era/lib/DateTime/Calendar/Japanese/Era.pm 1678 2006-07-06T08:54:21.939009Z lestrrat  $
+# $Id: /mirror/datetime/DateTime-Calendar-Japanese-Era/trunk/lib/DateTime/Calendar/Japanese/Era.pm 8587 2007-11-04T10:35:37.731911Z lestrrat  $
 #
-# Copyright (c) 2004-2005 Daisuke Maki <dmaki@cpan.org>
+# Copyright (c) 2004-2007 Daisuke Maki <daisuke@endeworks.jp>
 # All rights reserved.
 
 package DateTime::Calendar::Japanese::Era;
 use strict;
-use vars qw(@ISA @EXPORT_OK $VERSION);
-use Exporter;
-my $HAS_ENCODE;
-BEGIN
-{
-    @ISA       = 'Exporter';
-    @EXPORT_OK = qw(SOUTH_REGIME NORTH_REGIME);
-    $VERSION   = '0.07';
-
-    $HAS_ENCODE = eval { require Encode };
-}
+use warnings;
+use base qw(Class::Accessor::Fast Class::Data::Inheritable);
 use DateTime;
 use DateTime::Infinite;
+use Exporter qw(import);
+use File::ShareDir;
 use Params::Validate();
-use constant +{
-    NORTH_REGIME       => 1,
-    SOUTH_REGIME       => 2,
-    SOUTH_REGIME_START => DateTime->new(
-        year => 1331, 
-        month => 11, 
-        day => 7, 
-        time_zone => 'Asia/Tokyo'),
-    SOUTH_REGIME_END => DateTime->new(
-        year => 1392, 
-        month => 11, 
-        day => 27,
-        time_zone => 'Asia/Tokyo'),
-};
+use YAML ();
+use constant HAS_ENCODE   => eval { require Encode } && ! $@ ? 1 : 0;
+use constant NORTH_REGIME => 1;
+use constant SOUTH_REGIME => 2;
+use constant SOUTH_REGIME_START => DateTime->new(
+    year => 1331, 
+    month => 11, 
+    day => 7, 
+    time_zone => 'Asia/Tokyo'
+);
+use constant SOUTH_REGIME_END => DateTime->new(
+    year => 1392, 
+    month => 11, 
+    day => 27,
+    time_zone => 'Asia/Tokyo'
+);
+our $VERSION = '0.08000';
+our @EXPORT_OK = qw(SOUTH_REGIME NORTH_REGIME);
+
+__PACKAGE__->mk_accessors($_) for qw(id name start end);
+__PACKAGE__->mk_classdata(MainDataFile =>
+    File::ShareDir::module_file(__PACKAGE__, 'eras.yaml')
+);
+__PACKAGE__->mk_classdata(SouthRegimeDataFile =>
+    File::ShareDir::module_file(__PACKAGE__, 'south-eras.yaml')
+);
 
 my(%ERAS_BY_ID, %ERAS_BY_NAME, @ERAS_BY_CENTURY, @SOUTH_REGIME_ERAS);
 
@@ -47,14 +52,8 @@ sub new
 {
     my $class = shift;
     my %args  = Params::Validate::validate(@_, \%NewValidate);
-
-    bless \%args, $class;
+    $class->SUPER::new({ %args });
 }
-
-sub id    { $_[0]->{id}    }
-sub start { $_[0]->{start} }
-sub end   { $_[0]->{end}   }
-sub name  { $_[0]->{name}  }
 
 sub clone
 {
@@ -85,7 +84,7 @@ sub lookup_by_name
         name => { type => Params::Validate::SCALAR() },
         encoding => { optional => 1 },
     });
-    my $name = $args{encoding} && $HAS_ENCODE ?
+    my $name = $args{encoding} && &HAS_ENCODE ?
         Encode::decode($args{encoding}, $args{name}) : $args{name};
 
     return exists $ERAS_BY_NAME{ $name } ?
@@ -165,273 +164,17 @@ sub registered
     return values (%ERAS_BY_ID);
 }
 
-#BEGIN
+sub load_from_file
 {
-    # XXX - these dates were scoured from all over the net, and while
-    # I chose those dates that seemed to be most widely supported,
-    # I have a nagging feeling that these dates (not the years, just
-    # month/day) are from the traditional calendar, not gregorian...
+    my($class, $file, $opts) = @_;
 
     my $ID    = 0;
     my $NAME  = 1;
     my $START = 2;
     my $END   = 3;
-    my @predefined_eras = (
-        # ID                NAME        START           END
-        [ 'TAIKA',          '¬Á≤Ω',     [ 645, 8, 18 ]],
-        [ 'HAKUCHI',        '«Úµ',     [ 650, 4, 23 ], [ 654, 11, 26 ]],
-        [ 'SHUCHOU',        'ºÎƒª',     [ 686, 9, 15 ]],
-        [ 'TAIHOU',         '¬Á ı',     [ 701, 6, 5 ]],
-        [ 'KEIUN',          '∑ƒ±¿',     [ 704, 7, 19 ]],
-        [ 'WADOU',          'œ¬∆º',     [ 708, 2, 10 ]],
-        [ 'REIKI',          'ŒÓµµ',     [ 715, 11, 6 ]],
-        [ 'YOUROU',         'Õ‹œ∑',     [ 717, 12, 27 ]],
-        [ 'JINKI',          'ø¿µµ',     [ 724, 4, 5 ]],
-        [ 'TENPYOU',        '≈∑ ø',     [ 729, 10, 5 ]],
-        [ 'TENPYOUKANPOU',  '≈∑ ø¥∂ ı', [ 749, 6, 7 ]],
-        [ 'TENPYOUSHOUHOU', '≈∑ øæ° ı', [ 749, 8, 22 ]],
-        [ 'TENPYOUJOUJI',   '≈∑ ø ıª˙', [ 757, 10, 9 ]],
-        [ 'TENPYOUJINGO',   '≈∑ øø¿∏Ó', [ 765, 2, 5 ]],
-        [ 'JINGOKEIUN',     'ø¿∏Ó∑ ±¿', [ 767, 10, 16 ]],
-        [ 'HOUKI',          ' ıµµ',     [ 770, 11, 26 ]],
-        [ 'TENNOU',         '≈∑±˛',     [ 781, 2, 2 ]],
-        [ 'ENRYAKU',        '±‰ŒÒ',     [ 782, 10, 4 ]],
-        [ 'DAIDOU',         '¬Á∆±',     [ 806, 7, 11 ]],
-        [ 'KOUNIN',         'π∞øŒ',     [ 810, 11, 22 ]],
-        [ 'TENCHOU',        '≈∑ƒπ',     [ 823, 2, 22 ]],
-        [ 'JOUWA1',         'æµœ¬',     [ 834, 2, 18 ]],
-        [ 'KASHOU',         '≤≈æÕ',     [ 848, 8, 18 ]],
-        [ 'NINJU',          'øŒº˜',     [ 851, 7, 4 ]],
-        [ 'SAIKOU',         '¿∆π’',     [ 855, 1, 25 ]],
-        [ 'TENNAN',         '≈∑∞¬',     [ 857, 4, 22 ]],
-        [ 'JOUGAN',         'ƒÁ¥—',     [ 859, 6, 22 ]],
-        [ 'GANGYOU',        '∏µ∑ƒ',     [ 877, 6, 4 ]],
-        [ 'NINNA',          'øŒœ¬',     [ 885, 4, 13 ]],
-        [ 'KANPYOU',        '¥≤ ø',     [ 889, 7, 2 ]],
-        [ 'SHOUTAI',        'æª¬Ÿ',     [ 898, 6, 22 ]],
-        [ 'ENGI',           '±‰¥Ó',     [ 901, 9, 5 ]],
-        [ 'ENCHOU',         '±‰ƒπ',     [ 923, 6, 2 ]],
-        [ 'JOUHEI',         'æµ ø',     [ 931, 6, 19 ]],
-        [ 'TENGYOU',        '≈∑∑ƒ',     [ 938, 7, 26 ]],
-        [ 'TENRYAKU',       '≈∑ŒÒ',     [ 947, 6, 18 ]],
-        [ 'TENTOKU',        '≈∑∆¡',     [ 957, 12, 25 ]],
-        [ 'OUWA',           '±˛œ¬',     [ 961, 4, 8 ]],
-        [ 'KOUHOU',         'πØ ›',     [ 964, 8, 24 ]],
-        [ 'ANNA',           '∞¬œ¬',     [ 968, 10, 12 ]],
-        [ 'TENROKU',        '≈∑œΩ',     [ 970, 6, 6 ]],
-        [ 'TENNEN',         '≈∑±‰',     [ 974, 1, 20 ]],
-        [ 'JOUGEN1',        'ƒÁ∏µ',     [ 976, 9, 13 ]],
-        [ 'TENGEN',         '≈∑∏µ',     [ 979, 2, 3 ]],
-        [ 'EIKAN',          '± ¥—',     [ 983, 6, 3 ]],
-        [ 'KANNA',          '¥≤œ¬',     [ 985, 6, 22 ]],
-        [ 'EIEN',           '± ±‰',     [ 987, 6, 8 ]],
-        [ 'EISO',           '± „Ø',     [ 989, 10, 14 ]],
-        [ 'SHOURYAKU',      '¿µŒÒ',     [ 990, 12, 31 ]],
-        [ 'CHOUTOKU',       'ƒπ∆¡',     [ 995, 4, 28 ]],
-        [ 'CHOUHOU',        'ƒπ ›',     [ 999, 2, 6 ]],
-        [ 'KANKOU',         '¥≤π∞',     [ 1004, 9, 12 ]],
-        [ 'CHOUWA',         'ƒπœ¬',     [ 1013, 1, 14 ]],
-        [ 'KANNIN',         '¥≤øŒ',     [ 1017, 6, 25 ]],
-        [ 'JIAN',           'º£∞¬',     [ 1021, 3, 23 ]],
-        [ 'MANJU',          'À¸º˜',     [ 1024, 9, 23 ]],
-        [ 'CHOUGEN',        'ƒπ∏µ',     [ 1028, 9, 21 ]],
-        [ 'CHOURYAKU',      'ƒπŒÒ',     [ 1037, 6, 12 ]],
-        [ 'CHOUKYU',        'ƒπµ◊',     [ 1040, 12, 21 ]],
-        [ 'KANTOKU',        '¥≤∆¡',     [ 1045, 1, 20 ]],
-        [ 'EISHOU1',        '± æµ',     [ 1046, 6, 26 ]],
-        [ 'TENGI',          '≈∑¥Ó',     [ 1053, 2, 7 ]],
-        [ 'KOUHEI',         'πØ ø',     [ 1058, 10, 24 ]],
-        [ 'JIRYAKU',        'º£ŒÒ',     [ 1065, 10,  9 ]],
-        [ 'ENKYUU',         '±‰µ◊',     [ 1069, 6, 10 ]],
-        [ 'JOUHOU',         'æµ ›',     [ 1074, 10, 21 ]],
-        [ 'JOURYAKU',       'æµŒÒ',     [ 1078, 1, 9 ]],
-        [ 'EIHOU',          '±  ›',     [ 1081, 4, 27 ]],
-        [ 'OUTOKU',         '±˛∆¡',     [ 1084, 4, 19 ]],
-        [ 'KANJI',          '¥≤º£',     [ 1087, 6, 15 ]],
-        [ 'KAHOU',          '≤≈ ›',     [ 1095, 1, 29 ]],
-        [ 'EICHOU',         '± ƒπ',     [ 1097, 1, 8 ]],
-        [ 'JOUTOKU',        'æµ∆¡',     [ 1098, 1, 1 ]],
-        [ 'KOUWA',          'πØœ¬',     [ 1099, 10, 20 ]],
-        [ 'CHOUJI',         'ƒπº£',     [ 1104, 4, 13 ]],
-        [ 'KAJOU',          '≤≈æµ',     [ 1106, 6, 18 ]], # XXX - KASHOU?
-        [ 'TENNIN',         '≈∑øŒ',     [ 1108, 10, 15 ]],
-        [ 'TENNEI',         '≈∑± ',     [ 1110, 9, 5 ]],
-        [ 'EIKYU',          '± µ◊',     [ 1113, 9, 1 ]],
-        [ 'GENNEI',         '∏µ± ',     [ 1118, 5, 31 ]],
-        [ 'HOUAN',          ' ›∞¬',     [ 1120, 6, 14 ]],
-        [ 'TENJI',          '≈∑º£',     [ 1124, 5, 24 ]],
-        [ 'DAIJI',          '¬Áº£',     [ 1126, 2, 22 ]],
-        [ 'TENSHOU1',       '≈∑æµ',     [ 1131, 3, 6 ]],
-        [ 'CHOUSHOU',       'ƒπæµ',     [ 1132, 9, 28 ]],
-        [ 'HOUEN',          ' ›±‰',     [ 1135, 6, 16 ]],
-        [ 'EIJI',           '± º£',     [ 1141, 9, 18 ]],
-        [ 'KOUJI1',         'πØº£',     [ 1142, 6, 29 ]],
-        [ 'TENNYOU',        '≈∑Õ‹',     [ 1144, 5, 4 ]],
-        [ 'KYUAN',          'µ◊∞¬',     [ 1145, 9, 17 ]],
-        [ 'NINPEI',         'øŒ ø',     [ 1151, 2, 20 ]],
-        [ 'KYUJU',          'µ◊º˜',     [ 1154, 12, 11 ]],
-        [ 'HOUGEN',         ' ›∏µ',     [ 1156, 6, 23 ]],
-        [ 'HEIJI',          ' øº£',     [ 1159, 6, 14 ]],
-        [ 'EIRYAKU',        '± ŒÒ',     [ 1160, 2, 25 ]],
-        [ 'OUHOU',          '±˛ ›',     [ 1161, 10, 30 ]],
-        [ 'CHOUKAN',        'ƒπ¥≤',     [ 1163, 6, 9 ]],
-        [ 'EIMAN',          '± À¸',     [ 1165, 7, 21 ]],
-        [ 'NINNAN',         'øŒ∞¬',     [ 1166, 10, 29 ]],
-        [ 'KAOU',           '≤≈±˛',     [ 1169, 6, 11 ]],
-        [ 'SHOUAN1',        'æµ∞¬',     [ 1171, 7, 2 ]],
-        [ 'ANGEN',          '∞¬∏µ',     [ 1175, 9, 21 ]],
-        [ 'JISHOU',         'º£æµ',     [ 1177, 10, 3 ]],
-        [ 'YOUWA',          'Õ‹œ¬',     [ 1181, 9, 1 ]],
-        [ 'JUEI',           'º˜± ',     [ 1182, 8, 4 ]],
-        [ 'GENRYAKU',       '∏µŒÒ',     [ 1184, 6, 2 ]],
-        [ 'BUNJI',          ' ∏º£',     [ 1185, 10, 15 ]],
-        [ 'KENKYU',         '∑˙µ◊',     [ 1190, 6, 21 ]],
-        [ 'SHOUJI',         '¿µº£',     [ 1199, 6, 28 ]],
-        [ 'KENNIN',         '∑˙øŒ',     [ 1201, 5, 23 ]],
-        [ 'GENKYU',         '∏µµ◊',     [ 1204, 4, 28 ]],
-        [ 'KENNEI',         '∑˙± ',     [ 1206, 7, 11 ]],
-        [ 'JOUGEN2',        'æµ∏µ',     [ 1207, 12, 22 ]],
-        [ 'KENRYAKU',       '∑˙ŒÒ',     [ 1211, 4, 29 ]],
-        [ 'KENPOU',         '∑˙ ›',     [ 1214, 1, 24 ]],
-        [ 'JOUKYU',         'æµµ◊',     [ 1219, 6, 2 ]],
-        [ 'JOUOU1',         'ƒÁ±˛',     [ 1222, 5, 31 ]],
-        [ 'GENNIN',         '∏µøŒ',     [ 1225, 1, 7 ]],
-        [ 'KAROKU',         '≤≈œΩ',     [ 1225, 7, 3 ]],
-        [ 'ANTEI',          '∞¬ƒÁ',     [ 1228, 1, 24 ]],
-        [ 'KANKI',          '¥≤¥Ó',     [ 1229, 5, 6 ]],
-        [ 'JOUEI',          'ƒÁ± ',     [ 1232, 5, 29 ]],
-        [ 'TENPUKU',        '≈∑ °',     [ 1233, 6, 30 ]],
-        [ 'BUNRYAKU',       ' ∏ŒÒ',     [ 1235, 1, 2 ]],
-        [ 'KATEI',          '≤≈ƒ˜',     [ 1235, 11, 7 ]],
-        [ 'RYAKUNIN',       'ŒÒøŒ',     [ 1239, 1, 6 ]],
-        [ 'ENNOU',          '±‰±˛',     [ 1239, 4, 18 ]],
-        [ 'NINJI',          'øŒº£',     [ 1240, 9, 10 ]],
-        [ 'KANGEN',         '¥≤∏µ',     [ 1243, 4, 23 ]],
-        [ 'HOUJI',          ' ıº£',     [ 1247, 5, 11 ]],
-        [ 'KENCHOU',        '∑˙ƒπ',     [ 1249, 5, 8 ]],
-        [ 'KOUGEN',         'πØ∏µ',     [ 1256, 11, 29 ]],
-        [ 'SHOUKA',         '¿µ≤≈',     [ 1257, 5, 6 ]],
-        [ 'SHOUGEN',        '¿µ∏µ',     [ 1259, 5, 26 ]],
-        [ 'BUNNOU',         ' ∏±˛',     [ 1260, 5, 30 ]],
-        [ 'KOUCHOU',        'π∞ƒπ',     [ 1261, 4, 27 ]],
-        [ 'BUNNEI',         ' ∏± ',     [ 1264, 5, 2 ]],
-        [ 'KENJI',          '∑Úº£',     [ 1275, 6, 26 ]],
-        [ 'KOUAN1',         'π∞∞¬',     [ 1278, 4, 28 ]],
-        [ 'SHOUOU',         '¿µ±˛',     [ 1288, 7, 4 ]],
-        [ 'EININ',          '± øŒ',     [ 1293, 10, 12 ]],
-        [ 'SHOUAN2',        '¿µ∞¬',     [ 1299, 6, 30 ]],
-        [ 'KENGEN',         '¥•∏µ',     [ 1303, 1, 17 ]],
-        [ 'KAGEN',          '≤≈∏µ',     [ 1303, 9, 24 ]],
-        [ 'TOKUJI',         '∆¡º£',     [ 1307, 1, 26 ]],
-        [ 'ENKYOU1',        '±‰∑ƒ',     [ 1308, 11, 30 ]],
-        [ 'OUCHOU',         '±˛ƒπ',     [ 1311, 6, 23 ]],
-        [ 'SHOUWA1',        '¿µœ¬',     [ 1312, 6, 3 ]],
-        [ 'BUNPOU',         ' ∏ ›',     [ 1317, 3, 24 ]],
-        [ 'GENNOU',         '∏µ±˛',     [ 1319, 6, 24 ]],
-        [ 'GENKOU',         '∏µµ¸',     [ 1321, 4, 28 ]],
-        [ 'SHOUCHU',        '¿µ√Ê',     [ 1325, 1, 2 ]],
-        [ 'KARYAKU',        '≤≈ŒÒ',     [ 1326, 7, 4 ]],
-        [ 'GENTOKU',        '∏µ∆¡',     [ 1329, 10, 29 ]],
-        [ 'SHOUKEI',        '¿µ∑ƒ',     [ 1332, 6, 29 ]],
-        [ 'RYAKUOU',        'ŒÒ±˛',     [ 1338, 10, 19 ]],
-        [ 'KOUEI',          'πØ± ',     [ 1342, 7, 7 ]],
-        [ 'JOUWA2',         'ƒÁœ¬',     [ 1345, 12, 22 ]],
-        [ 'KANNOU',         '¥—±˛',     [ 1350, 5, 11 ]],
-        [ 'BUNNNA',         ' ∏œ¬',     [ 1352, 11, 12 ]], # XXX - BUNWA ?
-        [ 'ENBUN',          '±‰ ∏',     [ 1356, 6, 5 ]],
-        [ 'KOUAN2',         'πØ∞¬',     [ 1361, 6, 10 ]],
-        [ 'JOUJI',          'ƒÁº£',     [ 1362, 11, 17 ]],
-        [ 'OUAN',           '±˛∞¬',     [ 1368, 4, 13 ]],
-        [ 'EIWA',           '± œ¬',     [ 1375, 5, 5 ]],
-        [ 'KOURYAKU',       'πØŒÒ',     [ 1379, 5, 16 ]],
-        [ 'EITOKU',         '± ∆¡',     [ 1381, 4, 26 ]],
-        [ 'SHITOKU',        'ªÍ∆¡',     [ 1384, 4, 25 ]],
-        [ 'KAKEI',          '≤≈∑ƒ',     [ 1387, 10, 13 ]],
-        [ 'KOUOU',          'πØ±˛',     [ 1389, 4, 13 ]],
-        [ 'MEITOKU',        'Ã¿∆¡',     [ 1390, 5, 18 ]],
-        [ 'OUEI',           '±˛± ',     [ 1394, 9, 8 ]],
-        [ 'SHOUCHOU',       '¿µƒπ',     [ 1428, 6, 18 ]],
-        [ 'EIKYOU',         '± µ˝',     [ 1429, 11, 10 ]],
-        [ 'KAKITSU',        '≤≈µ»',     [ 1441, 4, 16 ]],
-        [ 'BUNNAN',         ' ∏∞¬',     [ 1444, 4, 1 ]],
-        [ 'HOUTOKU',        ' ı∆¡',     [ 1449, 9, 23 ]],
-        [ 'KYOUTOKU',       'µ˝∆¡',     [ 1452, 9, 17 ]],
-        [ 'KOUSHOU',        'πØ¿µ',     [ 1455, 9, 15 ]],
-        [ 'CHOUROKU',       'ƒπœΩ',     [ 1457, 11, 23 ]],
-        [ 'KANSHOU',        '¥≤¿µ',     [ 1461, 1, 10 ]],
-        [ 'BUNSHOU',        ' ∏¿µ',     [ 1466, 4, 21 ]],
-        [ 'OUNIN',          '±˛øŒ',     [ 1467, 5, 16 ]],
-        [ 'BUNMEI',         ' ∏Ã¿',     [ 1469, 6, 16 ]],
-        [ 'CHOUKYOU',       'ƒπµ˝',     [ 1487, 9, 15 ]],
-        [ 'ENTOKU',         '±‰∆¡',     [ 1489, 10, 23 ]],
-        [ 'MEIOU',          'Ã¿±˛',     [ 1492, 9, 19 ]],
-        [ 'BUNKI',          ' ∏µµ',     [ 1501, 4, 26 ]],
-        [ 'EISHOU2',        '± ¿µ',     [ 1504, 4, 24 ]],
-        [ 'DAIEI',          '¬Á± ',     [ 1521, 11, 1 ]],
-        [ 'KYOUROKU',       'µ˝œΩ',     [ 1528, 10, 12 ]],
-        [ 'TENBUN',         '≈∑ ∏',     [ 1532, 10, 7 ]],
-        [ 'KOUJI2',         'π∞º£',     [ 1555, 12, 16 ]],
-        [ 'EIROKU',         '± œΩ',     [ 1558, 4, 26 ]],
-        [ 'GENKI',          '∏µµµ',     [ 1570, 7, 5 ]],
-        [ 'TENSHOU2',       '≈∑¿µ',     [ 1573, 10, 3 ]],
-        [ 'BUNROKU',        ' ∏œΩ',     [ 1593, 1, 9 ]],
-        [ 'KEICHOU',        '∑ƒƒπ',     [ 1596, 12, 16 ]],
-        [ 'GENNA',          '∏µœ¬',     [ 1615, 9, 5 ]],
-        [ 'KANNEI',         '¥≤± ',     [ 1624, 5, 16 ]],
-        [ 'SHOUHOU',        '¿µ ›',     [ 1645, 1, 13 ]],
-        [ 'KEIAN',          '∑ƒ∞¬',     [ 1648, 4, 7 ]],
-        [ 'JOUOU2',         'æµ±˛',     [ 1652, 11, 18 ]],
-        [ 'MEIREKI',        'Ã¿ŒÒ',     [ 1655, 6, 16 ]],
-        [ 'MANJI',          'À¸º£',     [ 1658, 9, 19 ]],
-        [ 'KANBUN',         '¥≤ ∏',     [ 1661, 6, 21 ]],
-        [ 'ENPOU',          '±‰ ı',     [ 1673, 11, 28 ]],
-        [ 'TENNA',          '≈∑œ¬',     [ 1681, 12, 8 ]],
-        [ 'JOUKYOU',        'ƒÁµ˝',     [ 1684, 5, 4 ]],
-        [ 'GENROKU',        '∏µœΩ',     [ 1688, 11, 22 ]],
-        [ 'HOUEI',          ' ı± ',     [ 1704, 5, 15 ]],
-        [ 'SHOUTOKU',       '¿µ∆¡',     [ 1711, 7, 10 ]],
-        [ 'KYOUHOU',        'µ˝ ›',     [ 1716, 8, 9 ]],
-        [ 'GENBUN',         '∏µ ∏',     [ 1736, 7, 6 ]],
-        [ 'KANPOU',         '¥≤ ›',     [ 1741, 5, 11 ]],
-        [ 'ENKYOU2',        '±‰µ˝',     [ 1744, 5, 2 ]],
-        [ 'KANNEN',         '¥≤±‰',     [ 1748, 9, 4 ]],
-        [ 'HOUREKI',        ' ıŒÒ',     [ 1751, 12, 14 ]],
-        [ 'MEIWA',          'Ã¿œ¬',     [ 1764, 7, 29 ]],
-        [ 'ANNEI',          '∞¬± ',     [ 1773, 1, 8 ]],
-        [ 'TENMEI',         '≈∑Ã¿',     [ 1781, 5, 24 ]],
-        [ 'KANSEI',         '¥≤¿Ø',     [ 1801, 3, 16 ]],
-        [ 'KYOUWA',         'µ˝œ¬',     [ 1802, 3, 17 ]],
-        [ 'BUNKA',          ' ∏≤Ω',     [ 1804, 4, 3 ]],
-        [ 'BUNSEI',         ' ∏¿Ø',     [ 1818, 6, 20 ]],
-        [ 'TENPOU',         '≈∑ ›',     [ 1831, 1, 21 ]],
-        [ 'KOUKA',          'π∞≤Ω',     [ 1845, 1, 8 ]],
-        [ 'KAEI',           '≤≈± ',     [ 1848, 4, 30 ]],
-        [ 'ANSEI',          '∞¬¿Ø',     [ 1855, 1, 14 ]],
-        [ 'MANNEI',         'À¸±‰',     [ 1860, 5, 8 ]],  # XXX - MAN-EN?
-        [ 'BUNKYU',         ' ∏µ◊',     [ 1861, 4, 28 ]],
-        [ 'GENJI',          '∏µº£',     [ 1864, 4, 25 ]],
-        [ 'KEIOU',          '∑ƒ±˛',     [ 1865, 6, 23 ]],
-        [ 'MEIJI',          'Ã¿º£',     [ 1868, 10, 23 ] ],
-        [ 'TAISHO',         '¬Á¿µ',     [ 1912,  7, 30 ] ],
-        [ 'SHOUWA2',        'æºœ¬',     [ 1926, 12, 25 ] ],
-        [ 'HEISEI',         ' ø¿Æ',     [ 1989,  1,  8 ] ],
-    );
-    my @south_regime_eras = (
-        [ 'S_GENKOU',       '∏µπ∞',     [ 1331, 11, 7 ]],
-        [ 'S_KENMU',        '∑˙…',     [ 1334, 3, 12 ]],
-        [ 'S_EIGEN',        '±‰∏µ',     [ 1336, 4, 19 ]], # XXX - EN-GEN?
-        [ 'S_KOUKOKU',      '∂ΩπÒ',     [ 1340, 7, 1 ]],
-        [ 'S_SHOUHEI',      '¿µ ø',     [ 1347, 1, 27 ]],
-        [ 'S_KENTOKU',      '∑˙∆¡',     [ 1370, 9, 21 ]],
-        [ 'S_BUNCHU',       ' ∏√Ê',     [ 1372, 6, 10 ]],
-        [ 'S_TENJU',        '≈∑º¯',     [ 1375, 8, 2 ]],
-        [ 'S_KOUWA',        'π∞œ¬',     [ 1381, 4, 12 ]],
-        [ 'S_GENCHU',       '∏µ√Ê',     [ 1384, 6, 24 ], [ 1392, 11, 27 ]],
-    );
-
-    for(0..$#predefined_eras) {
-        my $this_era = $predefined_eras[$_];
-    
+    my @eras = @{ YAML::LoadFile($file) };
+    foreach my $idx (0..$#eras) {
+        my $this_era = $eras[$idx];
         my $start_date = DateTime->new(
             year      => $this_era->[$START]->[0],
             month     => $this_era->[$START]->[1],
@@ -440,10 +183,10 @@ sub registered
         );
 
         my $end_date;
-        if ($_ == $#predefined_eras) {
+        if ($idx == $#eras) {
             $end_date = DateTime::Infinite::Future->new();
         } else {
-            my $next_era = $predefined_eras[$_ + 1];
+            my $next_era = $eras[$idx + 1];
             if ($this_era->[$END]) {
                 $end_date = DateTime->new(
                     year      => $this_era->[$END]->[0],
@@ -465,62 +208,31 @@ sub registered
         # we really want them to be in UTC.
 #        $start_date->set_time_zone('UTC');
 #        $end_date->set_time_zone('UTC');
-    
-        __PACKAGE__->register_era(
-            id    => $this_era->[$ID],
-            name  => $HAS_ENCODE ? Encode::decode('euc-jp', $this_era->[$NAME]) : $this_era->[$NAME],
-            start => $start_date,
-            end   => $end_date
-        );
-        push @EXPORT_OK, $this_era->[$ID];
-        constant->import( $this_era->[$ID], $this_era->[$ID]);
-    }
 
-    for(0..$#south_regime_eras) {
-        my $this_era = $south_regime_eras[$_];
-    
-        my $start_date = DateTime->new(
-            year      => $this_era->[$START]->[0],
-            month     => $this_era->[$START]->[1],
-            day       => $this_era->[$START]->[2],
-            time_zone => 'Asia/Tokyo'
-        );
-
-        my $end_date;
-        if ($_ == $#south_regime_eras) {
-            $end_date = DateTime::Infinite::Future->new();
+        if ( $opts->{is_south_regime} ) {
+            push @SOUTH_REGIME_ERAS, __PACKAGE__->new(
+                id => $this_era->[$ID],
+                name => $this_era->[$NAME],
+                start => $start_date, 
+                end => $end_date, 
+            );
         } else {
-            my $next_era = $south_regime_eras[$_ + 1];
-            if ($this_era->[$END]) {
-                $end_date = DateTime->new(
-                    year      => $this_era->[$END]->[0],
-                    month     => $this_era->[$END]->[1],
-                    day       => $this_era->[$END]->[2],
-                    time_zone => 'Asia/Tokyo'
-                );
-            } else {
-                $end_date = DateTime->new(
-                    year      => $next_era->[$START]->[0],
-                    month     => $next_era->[$START]->[1],
-                    day       => $next_era->[$START]->[2],
-                    time_zone => 'Asia/Tokyo'
-                );
-            }
+            __PACKAGE__->register_era(
+                id    => $this_era->[$ID],
+                name  => $this_era->[$NAME], #$HAS_ENCODE ? Encode::decode('euc-jp', $this_era->[$NAME]) : $this_era->[$NAME],
+                start => $start_date,
+                end   => $end_date
+            );
         }
-
-        # we create the dates in Asia/Tokyo time, but for calculation
-        # we really want them to be in UTC.
-#        $start_date->set_time_zone('UTC');
-#        $end_date->set_time_zone('UTC');
-        push @SOUTH_REGIME_ERAS, __PACKAGE__->new(
-            id => $this_era->[$ID],
-            name => $HAS_ENCODE ? Encode::decode('euc-jp', $this_era->[$NAME]) : $this_era->[$NAME],
-            start => $start_date, 
-            end => $end_date, 
-        );
         push @EXPORT_OK, $this_era->[$ID];
         constant->import( $this_era->[$ID], $this_era->[$ID]);
     }
+}
+
+
+{
+    __PACKAGE__->load_from_file( __PACKAGE__->MainDataFile );
+    __PACKAGE__->load_from_file( __PACKAGE__->SouthRegimeDataFile, { is_south_regime => 1 });
 }
 
 1;
@@ -556,7 +268,10 @@ DateTime::Calendar::Japanese::Era - DateTime Extension for Japanese Eras
 
 =head1 DESCRIPTION
 
-Japan traditionally used an "era" system since 645. In modern days
+Japan traditionally used an "era" system since 645 to denote the year. For
+example, 2006 is "Heisei 18".
+
+The era system is loosely tied to the reign of an emperor: in modern days
 (since the Meiji era) eras can only be renewed when a new emperor succeeds his
 predecessor. Until then new eras were proclaimed for various reasons,
 including the succession of the shogunate during the Tokugawa shogunate.
@@ -613,8 +328,7 @@ DateTime::Calendar::Japanese::Era as constants.
 =head2 lookup_by_name
 
   $heisei = DateTime::Calendar::Japanese::Era->lookup_by_name(
-    name => ' ø¿Æ',
-    encoding => 'euc-jp',
+    name     => 'Âπ≥Êàê',
   );
 
 Returns the era associated with the given era name. By default UTF-8 is
@@ -629,6 +343,10 @@ assumed for the name parameter. You can override this by specifying the
   );
 
 Returns the era associate with the given date. 
+
+=head2 load_from_file
+
+Loads era definitions from the specified file. For internal use only
 
 =head1 CONSANTS
 
@@ -887,7 +605,14 @@ These are the eras from the South regime during 1331-1392
 
 =head1 AUTHOR
 
-Daisuke Maki E<lt>daisuke@cpan.orgE<gt>
+Copyright (c) 2004-2007 Daisuke Maki E<lt>daisuke@endeworks.jpE<gt>
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+See http://www.perl.com/perl/misc/Artistic.html
 
 =cut
 
