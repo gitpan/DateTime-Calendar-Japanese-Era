@@ -1,4 +1,4 @@
-# $Id: /mirror/datetime/DateTime-Calendar-Japanese-Era/trunk/lib/DateTime/Calendar/Japanese/Era.pm 8587 2007-11-04T10:35:37.731911Z lestrrat  $
+# $Id: /mirror/datetime/DateTime-Calendar-Japanese-Era/trunk/lib/DateTime/Calendar/Japanese/Era.pm 69495 2008-08-24T15:54:28.230984Z lestrrat  $
 #
 # Copyright (c) 2004-2007 Daisuke Maki <daisuke@endeworks.jp>
 # All rights reserved.
@@ -9,13 +9,14 @@ use warnings;
 use base qw(Class::Accessor::Fast Class::Data::Inheritable);
 use DateTime;
 use DateTime::Infinite;
+use Encode ();
 use Exporter qw(import);
 use File::ShareDir;
 use Params::Validate();
 use YAML ();
-use constant HAS_ENCODE   => eval { require Encode } && ! $@ ? 1 : 0;
 use constant NORTH_REGIME => 1;
 use constant SOUTH_REGIME => 2;
+
 use constant SOUTH_REGIME_START => DateTime->new(
     year => 1331, 
     month => 11, 
@@ -28,10 +29,11 @@ use constant SOUTH_REGIME_END => DateTime->new(
     day => 27,
     time_zone => 'Asia/Tokyo'
 );
-our $VERSION = '0.08000';
+our $VERSION = '0.08001';
 our @EXPORT_OK = qw(SOUTH_REGIME NORTH_REGIME);
 
 __PACKAGE__->mk_accessors($_) for qw(id name start end);
+
 __PACKAGE__->mk_classdata(MainDataFile =>
     File::ShareDir::module_file(__PACKAGE__, 'eras.yaml')
 );
@@ -84,7 +86,7 @@ sub lookup_by_name
         name => { type => Params::Validate::SCALAR() },
         encoding => { optional => 1 },
     });
-    my $name = $args{encoding} && &HAS_ENCODE ?
+    my $name = $args{encoding} ?
         Encode::decode($args{encoding}, $args{name}) : $args{name};
 
     return exists $ERAS_BY_NAME{ $name } ?
@@ -212,14 +214,14 @@ sub load_from_file
         if ( $opts->{is_south_regime} ) {
             push @SOUTH_REGIME_ERAS, __PACKAGE__->new(
                 id => $this_era->[$ID],
-                name => $this_era->[$NAME],
+                name => Encode::decode_utf8($this_era->[$NAME]),
                 start => $start_date, 
                 end => $end_date, 
             );
         } else {
             __PACKAGE__->register_era(
                 id    => $this_era->[$ID],
-                name  => $this_era->[$NAME], #$HAS_ENCODE ? Encode::decode('euc-jp', $this_era->[$NAME]) : $this_era->[$NAME],
+                name  => Encode::decode_utf8($this_era->[$NAME]),
                 start => $start_date,
                 end   => $end_date
             );
@@ -236,6 +238,8 @@ sub load_from_file
 }
 
 1;
+
+__DATA__
 
 __END__
 

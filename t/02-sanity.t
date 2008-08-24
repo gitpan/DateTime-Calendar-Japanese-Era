@@ -1,6 +1,7 @@
 #!perl
 use strict;
 use Test::More (tests => 11);
+use utf8;
 
 BEGIN
 {

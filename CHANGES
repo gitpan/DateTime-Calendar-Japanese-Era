@@ -1,6 +1,12 @@
 Changes
 =======
 
+0.08001 25 Aug 2008
+  - Require File::ShareDir 1.00, and update Module::Install (oh boy)
+  - Require Encode. decode everything.
+  - I lied about ERA_NAME_ENCODING in my previous release. there's no
+    such thing
+
 0.08000 04 Nov 2007
   - Migrate to Module::Install
   - No longer inherit from Exporter

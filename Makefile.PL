@@ -7,10 +7,11 @@ requires('Class::Accessor::Fast');
 requires('Class::Data::Inheritable');
 requires('DateTime');
 requires('DateTime::Infinite');
+requires('Encode');
 requires('Exporter');
-requires('File::ShareDir');
+requires('File::ShareDir', '1.00');
 requires('Params::Validate');
 
-install_share;
-auto_install;
+install_share 'module' => 'DateTime::Calendar::Japanese::Era', 'share';
+auto_include;
 WriteAll;
